@@ -3,6 +3,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openqa.selenium.By;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
@@ -13,6 +14,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +56,15 @@ public class TestSamples3 {
     @BeforeAll
     public static void setUp() {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("profile.default_content_setting_values.geolocation", 2); // BLOCK
+
+        ChromeOptions options = new ChromeOptions();
+        options.setExperimentalOption("prefs", prefs);
+
+        driver = new ChromeDriver(options);
+
         wait = new WebDriverWait(driver, Duration.ofSeconds(2));
         driver.get(BASE_URL);
         driver.manage().window().setSize(new Dimension(1264, 798));
@@ -66,10 +77,11 @@ public class TestSamples3 {
     }
 
     @BeforeEach
-    void ensureLoggedOut() {
+    void ensureLoggedOut() throws InterruptedException {
         driver.get(BASE_URL);
 
         if (driver.findElements(By.cssSelector("[role=\"menu\"] img.ubs-header-sing-in-img")).isEmpty()) {
+            wait.until(ExpectedConditions.elementToBeClickable(userMenuButton));
             userMenuButton.click();
             signOutOption.click();
             wait.until(ExpectedConditions.visibilityOf(signInButton));
@@ -78,7 +90,7 @@ public class TestSamples3 {
 
     @Test
     public void verifyTitle() {
-         assertThat(driver.getTitle(), is("GreenCity — Build Eco-Friendly Habits Today"));
+        assertThat(driver.getTitle(), is("GreenCity — Build Eco-Friendly Habits Today"));
     }
 
     @ParameterizedTest
@@ -88,32 +100,36 @@ public class TestSamples3 {
     })
     public void signIn(String email, String password) {
         signInButton.click();
-        wait.pollingEvery(Duration.ofMillis(500)).until((_) -> welcomeText.isDisplayed());
+        wait.until(ExpectedConditions.visibilityOf(welcomeText));
         assertThat(welcomeText.getText(), is("Welcome back!"));
         assertThat(signInDetailsText.getText(), is("Please enter your details to sign in."));
         assertThat(emailLabel.getText(), is("Email"));
+
         emailInput.sendKeys(email);
         assertThat(emailInput.getAttribute("value"), is(email));
+
         passwordInput.sendKeys(password);
         assertThat(passwordInput.getAttribute("value"), is(password));
+
         signInSubmitButton.click();
     }
 
     @ParameterizedTest
     @CsvSource({
-            "Please check that your e-mail address is indicated correctly"
+            "samplestesgreencity.com, uT346^^^erw, Please check that your e-mail address is indicated correctly",
+            "user@, Qwerty1!, Please check that your e-mail address is indicated correctly"
     })
-    public void signInNotValid(String message) {
+    public void signInNotValid(String email, String password, String message) {
         wait.pollingEvery(Duration.ofMillis(500)).until(ExpectedConditions.elementToBeClickable(signInButton));
         signInButton.click();
-        emailInput.sendKeys("samplestesgreencity.com");
-        passwordInput.sendKeys("uT346^^^erw");
+        emailInput.sendKeys(email);
+        passwordInput.sendKeys(password);
         assertThat(errorEmail.getText(), is(message));
     }
 
     @ParameterizedTest
     @CsvSource({
-        "Email is required., This field is required"
+            "Email is required., This field is required"
     })
     void signInWithEmptyFields(String emailErrorMsg, String passwordErrorMsg) {
         signInButton.click();
@@ -143,6 +159,19 @@ public class TestSamples3 {
         signInSubmitButton.click();
         assertThat(String.valueOf(errorMessage.isDisplayed()), true);
         wait.until(ExpectedConditions.textToBePresentInElement(errorMessage, errorMsg));
+        assertThat(errorMessage.getText(),is(errorMsg));
+    }
+
+    @AfterEach
+    void logOut() {
+        driver.get(BASE_URL);
+
+        if (driver.findElements(By.cssSelector("[role=\"menu\"] img.ubs-header-sing-in-img")).isEmpty()) {
+            wait.until(ExpectedConditions.elementToBeClickable(userMenuButton));
+            userMenuButton.click();
+            signOutOption.click();
+            wait.until(ExpectedConditions.visibilityOf(signInButton));
+        }
     }
 
     @AfterAll
