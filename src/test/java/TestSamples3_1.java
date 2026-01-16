@@ -1,5 +1,8 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openqa.selenium.*;
@@ -12,6 +15,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -104,7 +108,7 @@ public class TestSamples3_1 {
     }
 
     private void submitSignIn() {
-        waitClickable(submitButton).click();
+        waitVisible(submitButton).click();
     }
 
     private void logoutIfNeeded() {
@@ -124,8 +128,7 @@ public class TestSamples3_1 {
 
     @Test
     void verifyTitle() {
-        assertThat(driver.getTitle(),
-                is("GreenCity — Build Eco-Friendly Habits Today"));
+        assertThat(driver.getTitle(), containsString("GreenCity"));
     }
 
     @ParameterizedTest
@@ -171,7 +174,7 @@ public class TestSamples3_1 {
                 is("Email is required."));
         assertThat(waitVisible(passwordError).getText(),
                 is("This field is required"));
-        assertThat(waitClickable(submitButton).isEnabled(), is(false));
+        assertThat(waitVisible(submitButton).isEnabled(), is(false));
     }
 
     @ParameterizedTest

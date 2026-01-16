@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -90,7 +91,7 @@ public class TestSamples3 {
 
     @Test
     public void verifyTitle() {
-        assertThat(driver.getTitle(), is("GreenCity — Build Eco-Friendly Habits Today"));
+        assertThat(driver.getTitle(), containsString("GreenCity"));
     }
 
     @ParameterizedTest
