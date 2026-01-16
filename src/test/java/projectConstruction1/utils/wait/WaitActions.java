@@ -1,4 +1,4 @@
-package projectConstruction1.utils;
+package projectConstruction1.utils.wait;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
